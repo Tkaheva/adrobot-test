@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>Adrobot Test</title></head>
+<body>
+    <h1>Создание кампании</h1>
+    <form id="campaignForm">
+        <input type="text" id="name" placeholder="Название" required>
+        <input type="text" id="geo" placeholder="Гео (например, RU)" required>
+        <input type="number" id="offerId" placeholder="ID оффера" required>
+        <button type="submit">Создать</button>
+    </form>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('campaignForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                geo: document.getElementById('geo').value,
+                offer_id: parseInt(document.getElementById('offerId').value)
+            };
+            const res = await fetch('http://localhost:8000/api/campaigns', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        };
+    </script>
+</body>
+</html>
