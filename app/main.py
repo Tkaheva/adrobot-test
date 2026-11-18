@@ -25,9 +25,9 @@ def create_campaign(data: CampaignCreate):
     # Логика формирования payload для Keitaro
     payload = {
         "name": f"test_tkacheva_{data.name}",
-        "domain_id": 1,  # в реальности берем из справочника
-        "group_id": 1,
-        "source_id": 1,
+        "domain_id": 1813,  
+        "group_id": 9799,
+        "source_id": 836,
         "streams": [
             {
                 "name": "Google Stream",
