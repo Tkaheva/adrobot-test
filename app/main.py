@@ -107,7 +107,8 @@ def update_offers(campaign_id: int, data: OfferUpdate):
         # 3. Ищем поток с офферами
         target_stream = None
         for stream in streams:
-            if "offers" in stream:
+            # Ищем именно тот поток, где schema == "landings" (поток с офферами)
+            if stream.get("schema") == "landings" or stream.get("name") == "Offer Stream":
                 target_stream = stream
                 break
 
