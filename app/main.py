@@ -35,9 +35,9 @@ def create_campaign(data: CampaignCreate):
     payload = {
         "name": f"test_tkacheva_{data.name}",
         "alias": f"test_tkacheva_{data.name.lower().replace(' ', '_')}",
-        "domain_id": 1813,         # ID домена kylovoa.com
-        "group_id": 9799,          # ID группы "VZ adrobot test"
-        "traffic_source_id": 836,  # ID источника "FOR TESTS"
+        "domain_id": 1813,
+        "group_id": 9799,
+        "traffic_source_id": 836,
         "streams": [
             {
                 "name": "Google Stream",
@@ -71,8 +71,6 @@ def create_campaign(data: CampaignCreate):
 
     return {"message": "Campaign created successfully", "data": result}
 
-# --- Вторая часть ТЗ: Редактор кампаний ---
-
 @app.get("/api/campaigns")
 def list_campaigns():
     """Вернуть список всех кампаний из Keitaro"""
@@ -85,37 +83,30 @@ def list_campaigns():
 def update_offers(campaign_id: int, data: OfferUpdate):
     """
     Добавить или удалить оффер в кампании.
-    data.action: "add" или "remove"
-    data.offer_id: ID оффера
     """
     try:
-        # 1. Получаем текущее состояние кампании
+        # 1. Получаем текущее состояние кампании (шапку)
         campaign = client.get_campaign(campaign_id)
         
-        # --- ДОБАВЛЕНА СТРОКА ДЛЯ ОТЛАДКИ ---
-        print("DEBUG CAMPAIGN DATA:", campaign)
-        # ------------------------------------
+        # 2. Получаем потоки отдельным запросом
+        streams = client.get_campaign_streams(campaign_id)
 
-        # 2. Ищем поток с офферами
-        streams = campaign.get("streams", [])
+        # 3. Ищем поток с офферами (по наличию ключа offers)
         target_stream = None
         for stream in streams:
-            # Ищем поток, в котором есть ключ 'offers' (это точно поток с офферами)
-            # Или у которого schema/type равно 'landings'
-            if "offers" in stream or stream.get("schema") == "landings" or stream.get("type") == "landings":
+            if "offers" in stream:
                 target_stream = stream
                 break
 
         if target_stream is None:
             raise HTTPException(
                 status_code=400,
-                detail="В кампании не найден поток с офферами (schema='landings')"
+                detail="В кампании не найден поток с офферами (нет ключа 'offers')"
             )
 
-        # 3. Меняем список офферов
+        # 4. Меняем список офферов
         current_offers = target_stream.get("offers", [])
         if data.action == "add":
-            # Проверяем, нет ли уже такого оффера, чтобы не дублировать
             if not any(o.get("offer_id") == data.offer_id for o in current_offers):
                 current_offers.append({"offer_id": data.offer_id})
         elif data.action == "remove":
@@ -129,10 +120,10 @@ def update_offers(campaign_id: int, data: OfferUpdate):
                 detail="Неверное действие. Используйте 'add' или 'remove'"
             )
 
-        # 4. Обновляем поток в массиве streams
+        # 5. Обновляем поток в массиве streams
         target_stream["offers"] = current_offers
 
-        # 5. Отправляем обновлённый список потоков через PUT
+        # 6. Отправляем обновлённый список потоков через PUT
         result = client.update_campaign(campaign_id, {"streams": streams})
 
         return {

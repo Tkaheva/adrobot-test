@@ -29,7 +29,6 @@ class KeitaroClient:
         return self._get("groups")
 
     def get_sources(self):
-        # В API Keitaro эндпоинт называется именно traffic_sources
         return self._get("traffic_sources")
 
     def get_offers(self):
@@ -53,9 +52,12 @@ class KeitaroClient:
         return self._get("campaigns")
 
     def get_campaign(self, campaign_id: int):
-        """Получить детали одной кампании (с потоками)"""
-        # Просим Keitaro отдать кампанию вместе с потоками
-        return self._get(f"campaigns/{campaign_id}", params={"with": "streams"})
+        """Получить детали одной кампании"""
+        return self._get(f"campaigns/{campaign_id}")
+
+    def get_campaign_streams(self, campaign_id: int):
+        """Получить список потоков для конкретной кампании"""
+        return self._get(f"campaigns/{campaign_id}/streams")
 
     def update_campaign(self, campaign_id: int, payload: dict):
         """Обновить кампанию (передаём только те поля, которые меняем)"""
