@@ -92,11 +92,13 @@ def update_offers(campaign_id: int, data: OfferUpdate):
         # 1. Получаем текущее состояние кампании
         campaign = client.get_campaign(campaign_id)
 
-        # 2. Ищем поток с офферами (тот, у которого schema == "landings")
+        # 2. Ищем поток с офферами
         streams = campaign.get("streams", [])
         target_stream = None
         for stream in streams:
-            if stream.get("schema") == "landings":
+            # Ищем поток, в котором есть ключ 'offers' (это точно поток с офферами)
+            # Или у которого schema/type равно 'landings'
+            if "offers" in stream or stream.get("schema") == "landings" or stream.get("type") == "landings":
                 target_stream = stream
                 break
 
