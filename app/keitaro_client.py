@@ -44,3 +44,24 @@ class KeitaroClient:
         )
         r.raise_for_status()
         return r.json()
+
+    # --- Методы для редактора кампаний (Вторая часть ТЗ) ---
+
+    def get_campaigns(self):
+        """Получить список всех кампаний"""
+        return self._get("campaigns")
+
+    def get_campaign(self, campaign_id: int):
+        """Получить детали одной кампании"""
+        return self._get(f"campaigns/{campaign_id}")
+
+    def update_campaign(self, campaign_id: int, payload: dict):
+        """Обновить кампанию (передаём только те поля, которые меняем)"""
+        r = requests.put(
+            f"{self.base_url}/admin_api/v1/campaigns/{campaign_id}",
+            headers=self.headers,
+            json=payload,
+            timeout=10
+        )
+        r.raise_for_status()
+        return r.json()
