@@ -11,11 +11,12 @@ class KeitaroClient:
             
         self.headers = {"Api-Key": self.api_key}
 
-    def _get(self, endpoint: str):
+    def _get(self, endpoint: str, params: dict = None):
         """Базовый GET-запрос к API Keitaro"""
         r = requests.get(
             f"{self.base_url}/admin_api/v1/{endpoint}", 
             headers=self.headers, 
+            params=params,
             timeout=10
         )
         r.raise_for_status()
@@ -52,8 +53,9 @@ class KeitaroClient:
         return self._get("campaigns")
 
     def get_campaign(self, campaign_id: int):
-        """Получить детали одной кампании"""
-        return self._get(f"campaigns/{campaign_id}")
+        """Получить детали одной кампании (с потоками)"""
+        # Просим Keitaro отдать кампанию вместе с потоками
+        return self._get(f"campaigns/{campaign_id}", params={"with": "streams"})
 
     def update_campaign(self, campaign_id: int, payload: dict):
         """Обновить кампанию (передаём только те поля, которые меняем)"""
