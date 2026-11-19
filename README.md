@@ -1,44 +1,64 @@
-# Adrobot Test Task - Keitaro Wrapper
+# Adrobot Test Project
 
-Тестовое задание на позицию Fullstack-разработчик (Python/FastAPI). 
-Сервис-обертка над рекламным трекером Keitaro для создания кампаний и управления офферами.
+Тестовое задание: API-сервис для взаимодействия с трекером Keitaro и простой веб-интерфейс для управления кампаниями и офферами.
 
-## Стек технологий
-- **Backend:** Python 3.11, FastAPI, SQLAlchemy
-- **Database:** PostgreSQL
-- **Frontend:** HTML + Vanilla JavaScript (минималистичный интерфейс)
-- **Инфраструктура:** Docker, Docker Compose
+## Как запустить проект
 
-## Инструкция по запуску (Docker)
+1. Убедитесь, что у вас установлены **Docker** и **Docker Compose**.
+2. Создайте файл `.env` в корне проекта (на основе `.env.example`) и укажите ваш API-ключ от Keitaro:
+   KEITARO_URL=https://tlgk.host
+   KEITARO_API_KEY=ваш_ключ_здесь
+Запустите проект командой:
 
-Самый простой способ запустить проект — использовать Docker.
+docker compose up --build -d
+Приложение будет доступно по адресу: http://localhost:8001.
 
-1. Клонируйте репозиторий:
-   git clone https://github.com/Tkaheva/adrobot-test.git
-   cd adrobot-test
+Эндпоинты API
+Документация Swagger доступна по адресу: http://localhost:8001/docs
 
-2. Запуск в терминале:
-   docker compose up --build -d
-   
-3. Открытие проекта:
-   Документация API (Swagger): http://localhost:8001/docs
-   
-   Веб-интерфейс: http://localhost:8001/
+1. Создание кампании
+Метод: POST /api/campaigns
 
-4. Структура проекта:
-adrobot-test/
-├── app/
-│   ├── __init__.py
-│   ├── main.py             # Точка входа, роуты FastAPI
-│   ├── database.py         # Подключение к PostgreSQL
-│   ├── models.py           # Модели SQLAlchemy (Domain, Group, Offer)
-│   ├── schemas.py          # Pydantic-схемы (валидация входящих данных)
-│   └── keitaro_client.py   # Обертка над API Keitaro (GET/POST запросы)
-├── frontend/
-│   └── index.html          # Интерфейс для работы с API
-├── .env                    # (Не коммитится, добавлен в .gitignore)
-├── .env.example            # Пример заполнения переменных
-├── docker-compose.yml      # Конфигурация Docker
-├── Dockerfile              # Инструкция сборки образа
-├── requirements.txt        # Зависимости Python
-└── README.md
+Описание: Создает новую кампанию в Keitaro с двумя потоками: Google Stream (редирект) и Offer Stream (офферы).
+
+Тело запроса:
+
+json
+{
+  "name": "test_campaign",
+  "geo": "RU",
+  "offer_id": 18813
+}
+2. Получение списка кампаний
+Метод: GET /api/campaigns
+
+Описание: Возвращает список всех доступных кампаний из Keitaro.
+
+3. Редактор офферов в кампании
+Метод: PUT /api/campaigns/{campaign_id}/offers
+
+Описание: Добавляет или удаляет оффер в потоке с офферами (Offer Stream, schema: "landings") указанной кампании.
+
+Тело запроса (добавление):
+
+json
+{
+  "action": "add",
+  "offer_id": 18814
+}
+Тело запроса (удаление):
+
+json
+{
+  "action": "remove",
+  "offer_id": 18814
+}
+Веб-интерфейс (Frontend)
+В папке frontend находится файл index.html. Это простой интерфейс для работы с редактором кампаний.
+
+Откройте frontend/index.html в браузере (рекомендуется использовать расширение Live Server в VS Code, чтобы избежать проблем с CORS при открытии файла напрямую).
+
+Выберите кампанию из выпадающего списка.
+
+Введите ID оффера и нажмите «Добавить» или «Удалить».
+
