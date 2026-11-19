@@ -2,9 +2,20 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from .keitaro_client import KeitaroClient
 import requests
+from fastapi.middleware.cors import CORSMiddleware # <-- ДОБАВЛЕН ИМПОРТ
 
 app = FastAPI(title="Adrobot Test")
 client = KeitaroClient()
+
+# --- ДОБАВЛЕН БЛОК НАСТРОЙКИ CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешаем запросы с любых источников (для теста)
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешаем все методы (GET, POST, PUT и т.д.)
+    allow_headers=["*"],  # Разрешаем любые заголовки
+)
+# ------------------------------------
 
 # --- Модели данных ---
 
@@ -83,17 +94,20 @@ def list_campaigns():
 def update_offers(campaign_id: int, data: OfferUpdate):
     """
     Добавить или удалить оффер в кампании.
+    data.action: "add" или "remove"
+    data.offer_id: ID оффера
     """
     try:
         # 1. Получаем текущее состояние кампании (шапку)
         campaign = client.get_campaign(campaign_id)
         
-        # 2. Получаем потоки отдельным запросом
+        # 2. Получаем потоки отдельным запросом (так как Keitaro не отдает их в get_campaign)
         streams = client.get_campaign_streams(campaign_id)
 
-        # 3. Ищем поток с офферами (по наличию ключа offers)
+        # 3. Ищем поток с офферами
         target_stream = None
         for stream in streams:
+            # Ищем поток, в котором есть ключ 'offers' (это точно поток с офферами)
             if "offers" in stream:
                 target_stream = stream
                 break
@@ -107,6 +121,7 @@ def update_offers(campaign_id: int, data: OfferUpdate):
         # 4. Меняем список офферов
         current_offers = target_stream.get("offers", [])
         if data.action == "add":
+            # Проверяем, нет ли уже такого оффера, чтобы не дублировать
             if not any(o.get("offer_id") == data.offer_id for o in current_offers):
                 current_offers.append({"offer_id": data.offer_id})
         elif data.action == "remove":
