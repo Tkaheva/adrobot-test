@@ -91,6 +91,10 @@ def update_offers(campaign_id: int, data: OfferUpdate):
     try:
         # 1. Получаем текущее состояние кампании
         campaign = client.get_campaign(campaign_id)
+        
+        # --- ДОБАВЛЕНА СТРОКА ДЛЯ ОТЛАДКИ ---
+        print("DEBUG CAMPAIGN DATA:", campaign)
+        # ------------------------------------
 
         # 2. Ищем поток с офферами
         streams = campaign.get("streams", [])
